@@ -10,6 +10,11 @@ app.use(cors({
   methods: ["GET", "POST"]
 }));
 
+// Simple route so browser doesn't show "Cannot GET /"
+app.get("/", (req, res) => {
+  res.send("Realtime Chat Backend is Running 🚀");
+});
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
