@@ -4,13 +4,18 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST"]
+}));
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
     origin: "*",
+    methods: ["GET", "POST"]
   },
 });
 
@@ -18,24 +23,23 @@ const users = [];
 
 io.on("connection", (socket) => {
 
-  console.log("User connected");
+  console.log("User connected:", socket.id);
 
   socket.on("join_room", (data) => {
 
     socket.join(data.room);
 
     if (!users.find(user => user.id === socket.id)) {
-  users.push({
-    id: socket.id,
-    username: data.username,
-    room: data.room
-  });
-}
+      users.push({
+        id: socket.id,
+        username: data.username,
+        room: data.room
+      });
+    }
 
     const roomUsers = users.filter((user) => user.room === data.room);
 
     io.to(data.room).emit("room_users", roomUsers);
-
   });
 
   socket.on("send_message", (data) => {
@@ -61,10 +65,13 @@ io.on("connection", (socket) => {
       io.to(room).emit("room_users", roomUsers);
     }
 
+    console.log("User disconnected:", socket.id);
   });
 
 });
 
-server.listen(3001, () => {
-  console.log("Server running on port 3001");
+const PORT = process.env.PORT || 3001;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
